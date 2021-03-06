@@ -1,6 +1,8 @@
 package br.com.zup.edu.ligaqualidade.desafioprovadorpagamentos.modifique.servico;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import br.com.zup.edu.ligaqualidade.desafioprovadorpagamentos.modifique.mapper.DadosRecebimentoAdiantadoMapper;
@@ -11,22 +13,21 @@ import br.com.zup.edu.ligaqualidade.desafioprovadorpagamentos.pronto.DadosTransa
 public class TransacaoPagamentoService {
 	
 	public static List<String[]> processar(List<String> infoTransacoes, List<String> infoAdiantamentos) {
-		List<DadosTransacao> transacoes = DadosTransacaoMapper.toList(infoTransacoes);
-		List<DadosRecebimentoAdiantado> adiantamentos = DadosRecebimentoAdiantadoMapper.toList(infoAdiantamentos);
+		Map<Integer, DadosTransacao> transacoes = DadosTransacaoMapper.toMap(infoTransacoes);
+		Map<Integer, DadosRecebimentoAdiantado> adiantamentos = DadosRecebimentoAdiantadoMapper.toMap(infoAdiantamentos);
 		
-		return transacoes.stream().map(transacao ->
-			getTransacao(transacao).executar(transacao, getAdiantamento(transacao, adiantamentos))
-		).collect(Collectors.toList());
+		return transacoes.values().stream().map(transacao -> {
+			DadosRecebimentoAdiantado adiantamento = getAdiantamento(transacao.id, adiantamentos);
+			return getTransacao(transacao,adiantamento).executar(transacao, adiantamento);
+		}).collect(Collectors.toList());
+	}
+
+	public static DadosRecebimentoAdiantado getAdiantamento(Integer transacao, Map<Integer, DadosRecebimentoAdiantado> adiantamentos) {
+		return adiantamentos.getOrDefault(transacao, new DadosRecebimentoAdiantado(transacao, new BigDecimal("0.05"))) ;
 	}
 	
-	public static DadosRecebimentoAdiantado getAdiantamento(DadosTransacao transacao, List<DadosRecebimentoAdiantado> adiantamentos) {
-		
-		
-		return adiantamentos.isEmpty() ? null : adiantamentos.stream().filter(it -> it.idTransacao == transacao.id).findAny().get();
-	}
-	
-	public static Transacao getTransacao(DadosTransacao transacao) {
-		return TransacaoPagamento.valueOf(transacao.metodo.name()).instance();
+	public static Transacao getTransacao(DadosTransacao transacao, DadosRecebimentoAdiantado adiantamento) {
+		return TransacaoPagamento.valueOf(transacao.metodo.name()).instance(adiantamento.taxa);
 	}
 	
 

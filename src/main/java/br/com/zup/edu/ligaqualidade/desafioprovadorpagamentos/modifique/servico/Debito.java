@@ -9,13 +9,20 @@ import br.com.zup.edu.ligaqualidade.desafioprovadorpagamentos.pronto.DadosTransa
 public class Debito implements Transacao {
 	
 	public static final Debito INSTANCE = new Debito();
-	
+
 	@Override
-	public String[] executar(DadosTransacao transacao, DadosRecebimentoAdiantado adiantamento) {
-		return new String[] {"pago",
-				transacao.valor.toString(),
-				Utils.calcularDesconto(transacao.valor, new BigDecimal("0.03")).toString(), 
-				Utils.getDataTransacaoDebito()};	
+	public String getInfo() {
+		return "pago";
+	}
+
+	@Override
+	public BigDecimal getRate() {
+		return new BigDecimal("0.03");
+	}
+
+	@Override
+	public String getDataTransacao() {
+		return Utils.getDataTransacaoDebito();
 	}
 
 }

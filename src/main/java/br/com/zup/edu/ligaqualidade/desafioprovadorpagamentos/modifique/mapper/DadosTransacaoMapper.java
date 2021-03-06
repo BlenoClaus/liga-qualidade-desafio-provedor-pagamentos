@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import br.com.zup.edu.ligaqualidade.desafioprovadorpagamentos.pronto.DadosTransacao;
@@ -26,12 +27,12 @@ public class DadosTransacaoMapper {
 	}
 	
 	
-	public static List<DadosTransacao> toList(List<String> dados) {
-		
+	public static Map<Integer, DadosTransacao> toMap(List<String> dados) {
+
 		return dados
 				.stream()
 				.map(it -> toObject(Arrays.asList(it.split(","))))
-				.collect(Collectors.toList());
+				.collect(Collectors.toMap(s -> s.id, s1 -> s1));
 		
 	}
 	
